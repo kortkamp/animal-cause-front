@@ -1,34 +1,26 @@
 import { api } from "./api";
 
-
 interface LoginResponse {
 	userId: string,
+  name: string,
+	avatar: null,
 	email: string,
 	roles: string[],
 	token: string
-}
-
-interface RefreshTokenResponse {
-  token: string;
 }
 
 const login = async (
   email: string,
   password: string
 ): Promise<LoginResponse> => {
-  return api.post('/sessions', { email, password });
+  return (await api.post('/v1/auth/signin', { email, password })).data as LoginResponse;
 };
 
-const refreshToken = async (token: string) => {
-  const response = await api.post('/sessions',
-   {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    }
-  );
-
-  return response.data as RefreshTokenResponse;
+const validateToken = async (
+  token: string,
+): Promise<LoginResponse> => {
+  return (await api.post('/v1/auth/validate', { token})).data as LoginResponse;
 };
 
-export { login, refreshToken };
+
+export { login, validateToken };

@@ -3,24 +3,27 @@
 /**
  * Smartly reads value from localStorage
  */
-export function localStorageGet(name: string, defaultValue: any = ''): any {
+export function localStorageGet<T>(name: string): T {
   const valueFromStore = localStorage.getItem(name);
-  if (valueFromStore === null) return defaultValue; // No value in store, return default one
 
-  try {
-    const jsonParsed: unknown = JSON.parse(valueFromStore);
-    if (
-      ['boolean', 'number', 'bigint', 'string', 'object'].includes(
-        typeof jsonParsed
-      )
-    ) {
-      return jsonParsed; // We successfully parse JS value from the store
-    }
-  } catch (error) {
-    console.error(error);
+  if(!valueFromStore) {
+    throw new Error(`No value found in localStorage for key "${name}"`);
   }
 
-  return valueFromStore; // Return string value as it is
+  try {
+    const jsonParsed: T = JSON.parse(valueFromStore);
+ 
+    return jsonParsed; // We successfully parse JS value from the store
+  
+  } catch (error) {
+    throw new Error(`Error parsing value from localStorage for key "${name}": ${error}`);
+  }
+}
+
+export function localStorageGetString(name: string): string | null {
+  const valueFromStore = localStorage.getItem(name);
+
+  return valueFromStore;
 }
 
 /**

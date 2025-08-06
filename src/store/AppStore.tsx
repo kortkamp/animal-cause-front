@@ -10,12 +10,14 @@ import {
   useState,
 } from 'react';
 import { AppReducer, AppStoreState, DispatchAction } from './AppReducer';
-import { refreshToken } from '../services/sessionServices';
 import { Spinner } from '@/components/Spinner';
-import { localStorageGet } from '@/utils/localStorage';
+import { localStorageGetString } from '@/utils/localStorage';
+import { setApiToken } from '@/services/api';
+import { validateToken } from '@/services/sessionServices';
 
 const INITIAL_APP_STATE: AppStoreState = {
   isAuthenticated: false,
+  user: null,
   token: '',
 };
 
@@ -55,10 +57,20 @@ const AppStoreProvider: FunctionComponent<AppStoreProviderProps> = ({
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const validadeToken = async (token: string) => {
+    const checkSession = async (token: string) => {
       try {
-        const res = await refreshToken(token);
-        dispatch({ type: 'LOG_IN', payload: { token: res.token } });
+        const loginData = await validateToken(token);
+        setApiToken(token);
+        dispatch({
+          type: 'LOG_IN', payload: {
+            token: token, user: {
+              id: loginData.userId,
+              name: loginData.name,
+              avatar: loginData.avatar || null, // Assuming avatar can be null
+              email: loginData.email,
+            }
+          }
+        });
       } catch (error) {
         console.error('Token validation failed:', error);
         dispatch({ type: 'LOG_OUT' });
@@ -67,14 +79,14 @@ const AppStoreProvider: FunctionComponent<AppStoreProviderProps> = ({
       }
     };
 
-    const token = localStorageGet('token');
+    const token = localStorageGetString('token');
 
     if (token) {
-      validadeToken(token);
+      checkSession(token);
     } else {
       setIsLoading(false);
     }
-  }, []);
+  }, [dispatch]);
 
   return (
     <AppContext.Provider value={reducer}>
