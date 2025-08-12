@@ -21,6 +21,39 @@ export interface Cause
     ]
 }
 
+export interface CreateCauseRequest {
+    details: {
+        title: string;
+        description: string;
+        deadlineDate: string | null;
+    },
+    location: {
+		state: string,
+		city: string
+        neighborhood:string | null
+        address:string | null
+        number:string | null
+        complement:string | null
+        zipCode:string | null
+        latitude: string,
+        longitude: string,
+	},
+	goalAmount: string
+}
+
+export interface CreateCauseResponse {
+    id: string;
+    name: string;
+    slug: string;
+}
+
+export interface CauseDonation {
+    id: string;
+    donorName: string;
+    amount: number;
+    date: Date;
+}
+
 export interface PixDonationResponse {
     id: string;
     causeId: string;
@@ -39,6 +72,11 @@ export interface PixDonationResponse {
     currentStatus: string;
     pixBase64: string;
     pixQrCode: string;
+}
+
+export const createCause = async (cause: CreateCauseRequest) => {
+    const response = await api.post('/v1/causes', cause);
+    return response.data as CreateCauseResponse;
 }
 
 export const getCauseBySlug = async (slug: string) => {
@@ -88,3 +126,8 @@ export const getDonationById = async (donationId: string) => {
     const response = await api.get(`/v1/public/payments/${donationId}`);
     return response.data as PixDonationResponse;
 }
+
+export const getCauseDonations = async (causeId: string) => { 
+    const response = await api.get(`/v1/public/causes/${causeId}/donations`);
+    return response.data as CauseDonation[];
+};

@@ -1,3 +1,4 @@
+import { CauseDonations } from "@/components/CauseDonations";
 import { DonateButton } from "@/components/DonateButton";
 import { SafeArea } from "@/components/SafeArea";
 import { getCauseBySlug } from "@/services/causesService";
@@ -22,6 +23,7 @@ export default async function Cause({ params }: {
             <img src={cause.images[0].url} alt="Cause Image" className="mt-4 rounded" />
           )}
         </div>
+        <CauseDonations causeId={cause.id} />
         <Link href={`/causas/${cause.slug}/contribua`} className="mt-4">
           <DonateButton />
         </Link>

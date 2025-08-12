@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 'use client';
 import { useAppStore } from "@/store";
 import Link from "next/link";
@@ -11,10 +12,10 @@ const LogInButton = () => {
   );
 }
 
-const UserButton = ({ name, onclick }: { name: string, onclick: () => void }) => {
+const UserButton = ({ url, onclick }: { url: string, onclick: () => void }) => {
   return (
-    <button type="button" onClick={onclick} className="flex items-center gap-2 cursor-pointer rounded-full bg-green-500 p-1">
-      <span>{name.slice(0, 2)}</span>
+    <button type="button" onClick={onclick} className="rounded-full overflow-hidden">
+      <img src={url} alt="avatar image" className="h-10 w-10" />
     </button>
   );
 
@@ -30,9 +31,11 @@ const AuthButton = () => {
   };
 
   return (
-    <div>
-      {state.isAuthenticated ? <UserButton onclick={handleLogout} name={state.user?.name || ""} /> : <LogInButton />}
-    </div>
+
+    state.isAuthenticated ?
+      <UserButton onclick={handleLogout} url={state.user?.avatar?.url || ""} />
+      : <LogInButton />
+
   );
 }
 

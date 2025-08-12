@@ -9,7 +9,7 @@ import {
   useEffect,
   useState,
 } from 'react';
-import { AppReducer, AppStoreState, DispatchAction } from './AppReducer';
+import { AppReducer, AppStoreState, CreateCauseStored, DispatchAction } from './AppReducer';
 import { Spinner } from '@/components/Spinner';
 import { localStorageGetString } from '@/utils/localStorage';
 import { setApiToken } from '@/services/api';
@@ -18,6 +18,7 @@ import { validateToken } from '@/services/sessionServices';
 const INITIAL_APP_STATE: AppStoreState = {
   isAuthenticated: false,
   user: null,
+  causeStored: null,
   token: '',
 };
 
@@ -86,6 +87,21 @@ const AppStoreProvider: FunctionComponent<AppStoreProviderProps> = ({
     } else {
       setIsLoading(false);
     }
+
+    // Load stored cause creation data from localStorage
+    try {
+      const storedCauseRaw = localStorageGetString('causeCreation');
+
+      const storedCause = storedCauseRaw ? JSON.parse(storedCauseRaw) as CreateCauseStored : null;
+      dispatch({
+        type: 'LOAD_CAUSE',
+        payload: storedCause,
+      });
+    } catch (e) {
+      console.error('Error loading stored cause:', e);
+      dispatch({ type: 'CLEAR_CAUSE' });
+    }
+
   }, [dispatch]);
 
   return (
