@@ -1,6 +1,8 @@
 'use client';
 
 import { CauseDonation, getCauseDonations } from "@/services/causesService";
+import { timeSince } from "@/utils/date";
+import { toMoney } from "@/utils/money";
 import { useEffect, useState } from "react";
 
 interface CauseDonationsProps {
@@ -23,19 +25,17 @@ const CauseDonations = ({ causeId }: CauseDonationsProps) => {
   console.log(typeof donations[0]?.date);
 
   return (
-    <div>
-      <h2>Cause Donations</h2>
-
-      <ul className="text-gray-700 text-xs">
-        {donations.map(donation => (
-          <li key={donation.id}>
+    <div className="text-sm">
+      {donations.map(donation => (
+        <div key={donation.id} className="border-b border-gray-300 p-4">
+          <div className="flex justify-between">
             <p>Doador: {donation.donorName}</p>
-            <p>Valor: R${donation.amount}</p>
-            <p>Data: {donation.date}</p>
-          </li>
-        ))}
-      </ul>
-      {/* Add your component logic here */}
+            <p>{timeSince(new Date(donation.date))}</p>
+
+          </div>
+          <p>Valor: {toMoney(donation.amount)}</p>
+        </div>
+      ))}
     </div>
   );
 }

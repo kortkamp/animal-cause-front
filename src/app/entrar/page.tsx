@@ -1,7 +1,6 @@
 'use client';
 
 import { AppInput } from '@/components/AppInput';
-import { Spinner } from '@/components/Spinner';
 import { HttpError } from '@/services/httpError';
 import { login } from '@/services/sessionServices';
 import { useAppStore } from '@/store';
@@ -15,23 +14,25 @@ const Login = () => {
 
   const [message, setMessage] = useState('');
 
-  const [isLoading, setIsLoading] = useState(true);
+  const [isFetching, setIsFetching] = useState(false);
 
-  const [state, dispatch] = useAppStore();
+  const [, dispatch] = useAppStore();
 
   useEffect(() => {
-    if (state.isAuthenticated) {
-      const redirectPath = searchParams.get('redirect')
-      redirect(redirectPath ? redirectPath : '/');
+    const logout = searchParams.get('logout')
+
+    if (logout) {
+      dispatch({ type: 'LOG_OUT' })
     }
-    setIsLoading(false);
-  }, [searchParams, state]);
+  }, [dispatch, searchParams])
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     const [email, password] = e.target as unknown as { value: string }[];
 
+    let loginSuccess = false;
+    setIsFetching(true);
     try {
       const loginData = await login(email.value, password.value);
       dispatch({
@@ -45,6 +46,7 @@ const Login = () => {
           }
         }
       });
+      loginSuccess = true;
 
     } catch (error) {
       console.error('Login error:', error);
@@ -52,15 +54,14 @@ const Login = () => {
       setMessage(errorMessage);
     }
 
-  };
+    setIsFetching(false);
 
-  if (isLoading) {
-    return (
-      <div className="my-20 flex justify-center">
-        <Spinner />
-      </div>
-    );
-  }
+    if (loginSuccess) {
+      const redirectPath = searchParams.get('redirect')
+      redirect(redirectPath ? redirectPath : '/');
+    }
+
+  };
 
   return (
     <div className="my-20 flex justify-center">
@@ -70,7 +71,8 @@ const Login = () => {
         <p className="text-red-600">{message}</p>
         <button
           type="submit"
-          className="rounded-sm bg-green-700 p-2 font-semibold text-white"
+          className="rounded-sm bg-green-700 p-2 font-semibold text-white disabled:bg-gray-500"
+          disabled={isFetching}
         >
           Entrar
         </button>

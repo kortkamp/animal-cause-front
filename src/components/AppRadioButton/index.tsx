@@ -13,10 +13,23 @@ const AppRadioButton = ({ className, selected, onClick, children, ...props }: Ap
       type='button'
       onClick={onClick}
       {...props}
-      className={clsx("rounded-sm p-1 px-2 ring-1",
-        selected ? "bg-blue-500 text-white" : "bg-white text-black",
-        className)}
+      className={
+        clsx(
+          "rounded-md p-2 border border-primary flex items-center gap-2 hover:bg-primary-dark hover:text-white cursor-pointer",
+          selected ? "bg-primary text-white" : "bg-white text-primary",
+          className
+        )}
     >
+      <div className={
+        clsx(
+          'h-4 w-4 rounded-full border bg-transparent flex items-center justify-center select-none',
+          selected ? "border-white" : "border-primary"
+        )
+      }>
+        {selected &&
+          <div className='h-2 w-2 bg-white rounded-full'></div>
+        }
+      </div>
       {children}
     </button>
   );

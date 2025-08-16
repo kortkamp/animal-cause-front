@@ -1,5 +1,10 @@
 @theme {
   --color-primary: #24ca68; 
-  --color-primary-dark: #009D4E; 
+  --color-primary-dark: #009D4E;
+
+  --color-default: #282828;
+  --color-default-light: #8a8a8a;
+
+  --shadow-input: 0 0px 4px; 
 }
 
