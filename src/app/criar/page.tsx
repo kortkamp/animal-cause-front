@@ -1,52 +1,51 @@
 'use client';
 import { AppInput } from "@/components/AppInput";
+import { AppMoneyInput } from "@/components/AppInput/AppMoneyInput";
+import { DonateButton } from "@/components/DonateButton";
 import { SafeArea } from "@/components/SafeArea";
+import { StepBar } from "@/components/StepBar";
 import { useAppStore } from "@/store";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { redirect, RedirectType } from "next/navigation";
-import { FormEvent } from "react";
+import { Controller, SubmitHandler, useForm } from "react-hook-form";
+import * as z from "zod"
 
+
+interface FormData {
+  amount: number;
+  title: string
+}
+
+const schema = z.object({
+  amount: z.coerce.number<number>("Valor inválido"),
+  title: z.string("O nome é inválido").nonempty("O nome é obrigatório")
+})
 
 const CreateCause = () => {
 
   const [state, dispatch] = useAppStore();
-  // const [cause, setCause] = useState<CreateCauseRequest>({
-  //   details: {
-  //     title: '',
-  //     description: '',
-  //     deadlineDate: null,
-  //   },
-  //   location: {
-  //     state: '',
-  //     city: '',
-  //     neighborhood: '',
-  //     address: '',
-  //     number: '',
-  //     complement: '',
-  //     zipCode: '',
-  //     latitude: 0,
-  //     longitude: 0,
-  //   },
-  //   goalAmount: 0,
-  // });
 
-  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
+  const {
+    register,
+    handleSubmit,
+    control,
+    formState: { errors },
+  } = useForm<FormData>({
+    defaultValues: {
+      amount: state.causeStored?.goalAmount ? Number(state.causeStored?.goalAmount) : undefined,
+      title: state.causeStored?.title || ""
+    },
+    resolver: zodResolver(schema)
+  })
 
-    console.log('Submitting cause:', e);
-
-    const [title, amount] = e.target as unknown as { value: string }[];
+  const onSubmit: SubmitHandler<FormData> = async (data) => {
 
     dispatch({
       type: 'SET_CAUSE_FIELD',
       payload: {
-        title: title.value,
-        goalAmount: amount.value,
+        title: data.title,
+        goalAmount: data.amount.toString(),
       },
-    });
-
-    console.log('Cause data:', {
-      title: title.value,
-      value: amount.value,
     });
 
     redirect('/criar/identificacao', RedirectType.push);
@@ -54,26 +53,49 @@ const CreateCause = () => {
 
   return (
     <SafeArea className="flex justify-center flex-col items-center p-4">
-      <h1 className="text-2xl font-bold mb-4">Criar uma Causa</h1>
-      <form className="w-full max-w-md " onSubmit={handleSubmit}>
+      <form className="w-full max-w-md flex flex-col gap-4 mt-8" onSubmit={handleSubmit(onSubmit)}>
+        <StepBar currentStep={1} totalSteps={7} />
+        <h1 className="text-3xl font-bold mb-4">Vamos começar a sua nova Causa Animal</h1>
+
+
+        <h2 className="text-xl font-bold text-default">
+          <span>De quanto você </span>
+          <span className="text-primary">precisa?</span>
+        </h2>
+        <p>Defina sua meta para que doadores possam saber quanto falta para você chegar lá. Você pode editar esse valor quando quiser.</p>
+
+        <Controller
+          name="amount"
+          control={control}
+          render={({ field }) =>
+            <AppMoneyInput
+              defaultValue={field.value}
+              placeholder="1000,00"
+              onChange={field.onChange}
+              onBlur={field.onBlur}
+              title=""
+              error={errors.amount?.message}
+            />}
+        />
+
+
+
+        <h2 className="text-xl font-bold text-default">
+          <span>De um nome para sua </span>
+          <span className="text-primary">Causa Animal</span>
+        </h2>
         <AppInput
-          title="Nome da sua causa"
-          required
-          name="title"
+          title=""
           placeholder="Ajude o caramelo"
           defaultValue={state.causeStored?.title || ''}
+          {...register("title")}
+          error={errors.title?.message}
         />
-        <AppInput
-          title="Qual valor você precisa?"
-          placeholder="R$ 1000,00"
-          required
-          name="goalAmount"
-          defaultValue={state.causeStored?.goalAmount || ''}
-          type="number"
-        />
-        <button type="submit" className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
+
+        <p>Ao clicar no botão abaixo você declara que é maior de 18 anos, leu e está de acordo com os Termos, Taxas, Prazos e Regulamentos.</p>
+        <DonateButton type="submit" variant="lg">
           Continuar
-        </button>
+        </DonateButton>
       </form>
     </SafeArea>
   );

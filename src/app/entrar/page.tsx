@@ -16,15 +16,18 @@ const Login = () => {
 
   const [isFetching, setIsFetching] = useState(false);
 
-  const [, dispatch] = useAppStore();
+  const [state, dispatch] = useAppStore();
 
   useEffect(() => {
     const logout = searchParams.get('logout')
 
     if (logout) {
       dispatch({ type: 'LOG_OUT' })
+    } else if (state.isAuthenticated) {
+      const redirectPath = searchParams.get('redirect')
+      redirect(redirectPath ? redirectPath : '/');
     }
-  }, [dispatch, searchParams])
+  }, [dispatch, searchParams, state.isAuthenticated])
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();

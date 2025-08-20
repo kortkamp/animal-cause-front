@@ -1,14 +1,12 @@
-import { DetailedHTMLProps, InputHTMLAttributes, ReactNode } from 'react';
+import { SelectHTMLAttributes } from 'react';
 import clsx from 'clsx';
 
-export interface AppInputProps extends DetailedHTMLProps<InputHTMLAttributes<HTMLInputElement>, HTMLInputElement> {
+export interface AppSelectProps extends SelectHTMLAttributes<HTMLSelectElement> {
   title?: string;
   error?: string
-  appendLeft?: ReactNode
-  labelVariant?: 'lg'
 }
 
-const AppInput = ({ className, labelVariant, appendLeft, title, error = "", ...props }: AppInputProps) => {
+const AppSelect = ({ className, title, error = "", ...props }: AppSelectProps) => {
 
   return (
     <div
@@ -17,11 +15,9 @@ const AppInput = ({ className, labelVariant, appendLeft, title, error = "", ...p
     >
       <label htmlFor="" className={clsx(
         'pb-2 font-semibold text-gray-600',
-        labelVariant === 'lg' && 'text-xl'
       )}>{title}</label>
       <div className='w-full flex'>
-        {appendLeft}
-        <input
+        <select
           {...props}
           className={
             clsx(
@@ -29,7 +25,6 @@ const AppInput = ({ className, labelVariant, appendLeft, title, error = "", ...p
               "[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none",
               "focus:border-gray-800 focus:shadow-input",
               !!error && "border-red-600 focus:border-red-600 shadow-red-500",
-              !!appendLeft && "rounded-l-none"
             )
           } />
       </div>
@@ -38,4 +33,4 @@ const AppInput = ({ className, labelVariant, appendLeft, title, error = "", ...p
   );
 };
 
-export { AppInput };
+export { AppSelect };

@@ -1,85 +1,94 @@
 'use client';
 import { AppInput } from "@/components/AppInput";
+import { AppTextArea } from "@/components/AppTextArea";
+import { DonateButton } from "@/components/DonateButton";
+import LeftArrow from "@/components/Icons/LeftArrow";
 import { SafeArea } from "@/components/SafeArea";
+import { StepBar } from "@/components/StepBar";
 import { useAppStore } from "@/store";
-import { redirect } from "next/navigation";
-import { FormEvent } from "react";
+import { zodResolver } from "@hookform/resolvers/zod";
+import Link from "next/link";
+import { redirect, RedirectType } from "next/navigation";
+import { Controller, SubmitHandler, useForm } from "react-hook-form";
+import * as z from "zod"
 
+interface FormData {
+  description: string;
+  deadlineDate?: string;
+}
+
+const schema = z.object({
+  description: z.string("Descrição inválida").nonempty("Você precisa informar a descrição da sua causa"),
+  deadlineDate: z.string().optional()
+});
 
 const CreateCauseDetails = () => {
 
-
   const [state, dispatch] = useAppStore();
 
+  const {
+    register,
+    handleSubmit,
+    control,
+    formState: { errors },
+  } = useForm<FormData>({
+    defaultValues: {
+      description: state.causeStored?.description || "",
+      deadlineDate: state.causeStored?.deadlineDate ? state.causeStored?.deadlineDate : undefined
+    },
+    resolver: zodResolver(schema)
+  })
 
-
-  // const [cause, setCause] = useState<CreateCauseRequest>({
-  //   details: {
-  //     title: '',
-  //     description: '',
-  //     deadlineDate: null,
-  //   },
-  //   location: {
-  //     state: '',
-  //     city: '',
-  //     neighborhood: '',
-  //     address: '',
-  //     number: '',
-  //     complement: '',
-  //     zipCode: '',
-  //     latitude: 0,
-  //     longitude: 0,
-  //   },
-  //   goalAmount: 0,
-  // });
-
-  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
-
-    e.preventDefault();
-
-    console.log('Submitting cause:', e);
-
-    const [description, deadlineDate] = e.target as unknown as { value: string }[];
+  const onSubmit: SubmitHandler<FormData> = async (data) => {
 
     dispatch({
       type: 'SET_CAUSE_FIELD',
       payload: {
-        description: description.value,
-        deadlineDate: deadlineDate.value,
+        description: data.description,
+        deadlineDate: data.deadlineDate,
       },
     });
 
-
-
-    redirect('/criar/imagens')
-
-
+    redirect('/criar/localizacao', RedirectType.push)
   }
-
-
 
   return (
     <SafeArea className="flex justify-center flex-col items-center p-4">
-      <h1 className="text-2xl font-bold mb-4">Informe os detalhes da sua causa</h1>
-      <form className="w-full max-w-md " onSubmit={handleSubmit}>
-        <AppInput
-          title="Descrição da sua causa"
-          required
+      <form className="w-full max-w-md mt-4" onSubmit={handleSubmit(onSubmit)}>
+        <div>
+          <Link href={"/criar/identificacao"}>
+            <LeftArrow className="fill-default-light hover:fill-default cursor-pointer mb-10"></LeftArrow>
+          </Link>
+        </div>
+        <StepBar currentStep={3} totalSteps={7} />
+        <h1 className="text-2xl font-bold my-4">Informe os detalhes da sua causa</h1>
+        <p className="text-default mb-2">
+          Explique o <b>motivo</b> pelo qual você precisa arrecadar doações, como vai utilizar o valor arrecadado, e o quão importante é receber doações.
+        </p>
+        <Controller
           name="description"
-          placeholder="Estou arrecadando fundos para..."
-          type="text"
-          defaultValue={state.causeStored?.description || ''}
+          control={control}
+          render={({ field }) =>
+            <AppTextArea
+              value={field.value}
+              onChange={field.onChange}
+              onBlur={field.onBlur}
+              placeholder="Quero arrecadar este valor para ajudar os cães da minha rua..."
+              error={errors.description?.message}
+            />}
         />
         <AppInput
-          title="Sua causa tem data para acabar? (opcional)"
+          title="Sua causa tem um prazo final? (opcional)"
+          className="mt-4"
           type="date"
-          name="deadlineDate"
+          {...register("deadlineDate")}
           defaultValue={state.causeStored?.deadlineDate || ''}
+          error={errors.deadlineDate?.message}
         />
 
-        <button type="submit" className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
+        <DonateButton type="submit" className="w-full mt-4" variant="lg">
           Continuar
-        </button>
+        </DonateButton>
       </form>
     </SafeArea>
   );
